@@ -2,8 +2,22 @@ import { ApplicationService } from 'App/Services'
 import { ApiController } from 'App/Controllers/ApiController'
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { UpdateValidator } from 'App/Validators/Auth'
+import { ApplicationRepository } from 'App/Repositories/ApplicationRepository'
 
 export default class ApplicationController extends ApiController {
+  public async token({ response, params }: HttpContextContract) {
+    const token = params.token
+
+    const application = await new ApplicationRepository().getOne(null, {
+      where: [
+        { key: 'token', value: token },
+        { key: 'status', value: 'approved' },
+      ],
+    })
+
+    return this.response(response).withOne(application)
+  }
+
   public async index({ request, response, auth, pagination }: HttpContextContract) {
     const data = request.only(['where', 'orderBy', 'includes'])
 
@@ -25,7 +39,7 @@ export default class ApplicationController extends ApiController {
 
     const application = await new ApplicationService().setGuard(auth).update(params.id, data)
 
-    return this.response(response).withOne(application.toJSON())
+    return this.response(response).withOne(application)
   }
 
   public async delete({ response, params, auth }: HttpContextContract) {

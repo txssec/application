@@ -57,4 +57,6 @@ Route.group(() => {
     Route.post('/confirm', 'AuthController.confirm')
     Route.post('/register', 'AuthController.register')
   }).prefix('/auth')
+
+  Route.get('/get/applications/:token', 'ApplicationController.token')
 }).prefix(`${Config.get('app.prefix')}`)
