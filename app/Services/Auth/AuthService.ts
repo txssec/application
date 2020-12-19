@@ -89,7 +89,7 @@ export class AuthService extends BaseService {
       .query()
       .where('token', token)
       .update({ status: 'used' })
-    await new ApplicationRepository().update(application.id, { status: 'approved' })
+    await new ApplicationRepository().update(application.id, { status: 'pendent_issue' })
   }
 
   public async forgot({ email }) {
