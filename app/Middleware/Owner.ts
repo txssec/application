@@ -12,20 +12,16 @@ export default class Owner {
     await application.preload('roles')
     const isAuthorized = application.roles.find((role) => role.slug === 'admin')
 
-    if (isAuthorized) {
-      return next()
-    }
-
-    if (ctx.request.method() === 'PUT' && ctx.params) {
-      const id = ctx.params.id
-
-      if (id !== application.id) {
+    if (ctx.params.application_id) {
+      if (!isAuthorized && application.id !== ctx.params.application_id) {
         throw new UnauthorizedException(
-          'Application is not authorized to update resources of other application'
+          'Application is not authorized to manage other application resources'
         )
       }
-
-      return next()
+    } else if (ctx.params.id) {
+      if (!isAuthorized && application.id !== ctx.params.id) {
+        throw new UnauthorizedException('Application is not authorized to manage other application')
+      }
     }
 
     await next()
