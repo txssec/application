@@ -3,11 +3,13 @@ import { Token } from '@secjs/core'
 import { column, BaseModel, beforeCreate, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
 import { Application } from './Application'
 
+import Config from '@ioc:Adonis/Core/Config'
+
 export class Attachment extends BaseModel {
   @column({ isPrimary: true })
   public id: string
 
-  @column()
+  @column({ columnName: 'application_id' })
   public applicationId: string
 
   @column()
@@ -17,25 +19,35 @@ export class Attachment extends BaseModel {
   public icon: string
 
   @column()
-  public path: string
+  public type: 'avatar' | 'rg' | 'cnh' | 'id' | 'proof_of_address' | 'mock'
+
+  @column({
+    columnName: 'path_front',
+    serialize: (value: string) => {
+      return value ? `${Config.get('app.url')}/uploads/${value}` : value
+    },
+  })
+  public pathFront: string
+
+  @column({
+    columnName: 'path_back',
+    serialize: (value: string) => {
+      return value ? `${Config.get('app.url')}/uploads/${value}` : value
+    },
+  })
+  public pathBack?: string
 
   @column()
-  public size: string
+  public mime: JSON
 
   @column()
-  public original_name: string
+  public document?: JSON
 
   @column()
   public token: string
 
-  @column()
-  public from_token: string
-
-  @column()
-  public type: 'avatar' | 'rg' | 'cnh'
-
-  @column()
-  public extension: string
+  @column({ columnName: 'from_token' })
+  public fromToken?: string
 
   @column()
   public status: 'pendent' | 'approved' | 'reproved' | 'deleted'
@@ -53,12 +65,12 @@ export class Attachment extends BaseModel {
   public application: BelongsTo<typeof Application>
 
   @beforeCreate()
-  public static async generateToken(attachment: Attachment) {
-    attachment.token = new Token().generate('atc')
+  public static async generateId(attachment: Attachment) {
+    attachment.id = new Token().generate()
   }
 
   @beforeCreate()
-  public static async generateId(attachment: Attachment) {
-    attachment.id = new Token().getToken(attachment.token)
+  public static async generateToken(attachment: Attachment) {
+    attachment.token = new Token().generate('atc')
   }
 }
