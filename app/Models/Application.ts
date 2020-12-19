@@ -14,8 +14,11 @@ import {
 } from '@ioc:Adonis/Lucid/Orm'
 
 import { Role } from './Role'
+import { Issue } from './Issue'
 import { Attachment } from './Attachment'
 import { ApplicationToken } from './ApplicationToken'
+import { Contact } from './Contact'
+import { Address } from './Address'
 
 export { Application }
 
@@ -36,7 +39,7 @@ export default class Application extends BaseModel {
   public token: string
 
   @column()
-  public status: 'pendent' | 'approved' | 'reproved' | 'deleted'
+  public status: 'pendent' | 'pendent_issue' | 'approved' | 'reproved' | 'deleted'
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -53,8 +56,17 @@ export default class Application extends BaseModel {
   @hasMany(() => ApplicationToken)
   public applicationTokens: HasMany<typeof ApplicationToken>
 
+  @hasMany(() => Address)
+  public addresses: HasMany<typeof Address>
+
+  @hasMany(() => Contact)
+  public contacts: HasMany<typeof Contact>
+
   @hasMany(() => Attachment)
   public attachments: HasMany<typeof Attachment>
+
+  @hasMany(() => Issue)
+  public issues: HasMany<typeof Issue>
 
   @beforeSave()
   public static async hashPassword(application: Application) {
@@ -67,13 +79,13 @@ export default class Application extends BaseModel {
   }
 
   @beforeCreate()
-  public static async generateToken(application: Application) {
-    application.token = new Token().generate('app')
+  public static async generateId(application: Application) {
+    application.id = new Token().generate()
   }
 
   @beforeCreate()
-  public static async generateId(application: Application) {
-    application.id = new Token().getToken(application.token)
+  public static async generateToken(application: Application) {
+    application.token = new Token().generate('app')
   }
 
   @afterCreate()
@@ -94,5 +106,41 @@ export default class Application extends BaseModel {
       token: new Token().generate('utk'),
       expiresAt: DateTime.fromJSDate(tommorow),
     })
+  }
+
+  @afterCreate()
+  public static async generateIssues(application: Application) {
+    await application.related('issues').createMany([
+      {
+        key: 'EMPTY_ATTACHMENT',
+        description: 'An attachment is required to continue using the application.',
+        required: true,
+        inputType: 'file',
+        resourceType: 'id',
+        fromToken: application.token,
+      },
+      {
+        key: 'EMPTY_CONTACT',
+        description: 'Your contact is required to continue using the application.',
+        required: true,
+        inputType: 'text',
+        fromToken: application.token,
+      },
+      {
+        key: 'EMPTY_CELLPHONE',
+        description: 'Your cellphone is required to continue using the application.',
+        required: true,
+        inputType: 'text',
+        resourceType: 'cellphone',
+        fromToken: application.token,
+      },
+      {
+        key: 'EMPTY_ADDRESS',
+        description: 'Please complete your registration, provide your address.',
+        required: false,
+        inputType: 'object',
+        fromToken: application.token,
+      },
+    ])
   }
 }
