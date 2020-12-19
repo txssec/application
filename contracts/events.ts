@@ -5,6 +5,8 @@
  * file.
  */
 
+import { Address, Attachment, Contact } from 'App/Models'
+
 declare module '@ioc:Adonis/Core/Event' {
   /*
   |--------------------------------------------------------------------------
@@ -25,5 +27,9 @@ declare module '@ioc:Adonis/Core/Event' {
   | an instance of the the UserModel only.
   |
   */
-  interface EventsList {}
+  interface EventsList {
+    'new::contact': { key?: string; contact: Contact }
+    'new::address': { address: Address }
+    'new::attachment': { key?: string; attachment: Attachment }
+  }
 }
