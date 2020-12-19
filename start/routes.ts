@@ -44,11 +44,38 @@ Route.group(() => {
     Route.get('/auth/me', 'AuthController.me')
     Route.post('/auth/logout', 'AuthController.logout')
 
-    Route.get('/applications', 'ApplicationController.index').middleware('is:admin,manager')
-    Route.get('/applications/:id', 'ApplicationController.show').middleware('is:admin,manager')
-    Route.put('/applications/:id', 'ApplicationController.update')
-    Route.delete('/applications/:id', 'ApplicationController.delete')
+    Route.resource('applications', 'ApplicationController')
+      .apiOnly()
+      .middleware({
+        index: ['is:admin,manager'],
+      })
+
+    Route.resource('applications.contacts', 'ContactController')
+      .apiOnly()
+      .except(['update'])
+      .middleware({
+        show: ['resourceOwner'],
+        destroy: ['resourceOwner'],
+      })
+
+    Route.resource('applications.addresses', 'AddressController')
+      .apiOnly()
+      .except(['update'])
+      .middleware({
+        show: ['resourceOwner'],
+        destroy: ['resourceOwner'],
+      })
+
+    Route.resource('applications.attachments', 'AttachmentController')
+      .apiOnly()
+      .except(['update'])
+      .middleware({
+        show: ['resourceOwner'],
+        destroy: ['resourceOwner'],
+      })
   }).middleware(['auth', 'owner'])
+
+  Route.get('/issues', 'IssueController.index').middleware('auth')
 
   Route.group(() => {
     Route.post('/login', 'AuthController.login')
