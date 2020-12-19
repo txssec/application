@@ -10,7 +10,9 @@ export default class Applications extends BaseSchema {
       table.string('email', 255).notNullable()
       table.string('token', 255).notNullable().unique()
       table.string('password', 180).notNullable()
-      table.enu('status', ['pendent', 'approved', 'reproved', 'deleted']).defaultTo('pendent')
+      table
+        .enu('status', ['pendent', 'pendent_issue', 'approved', 'reproved', 'deleted'])
+        .defaultTo('pendent')
       table.timestamps(true)
       table.dateTime('deleted_at')
     })
