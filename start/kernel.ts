@@ -42,5 +42,5 @@ Server.middleware.registerNamed({
   is: 'App/Middleware/Is',
   auth: 'App/Middleware/Auth',
   owner: 'App/Middleware/Owner',
-  loginValidator: 'App/Validators/LoginValidator',
+  resourceOwner: 'App/Middleware/ResourceOwner',
 })
