@@ -34,7 +34,11 @@ export class ContactService extends BaseService {
     data.fromToken = this.Application.token
     data.applicationId = this.Application.id
     const newContact = await new ContactRepository().create(data)
-    Event.emit('new::contact', { key: 'EMPTY_CONTACT', contact: newContact })
+    Event.emit('new::contact', {
+      key: 'EMPTY_CONTACT',
+      application: this.Application,
+      contact: newContact,
+    })
 
     return newContact
   }

@@ -5,7 +5,7 @@
  * file.
  */
 
-import { Address, Attachment, Contact } from 'App/Models'
+import { Address, Application, Attachment, Contact } from 'App/Models'
 
 declare module '@ioc:Adonis/Core/Event' {
   /*
@@ -28,8 +28,9 @@ declare module '@ioc:Adonis/Core/Event' {
   |
   */
   interface EventsList {
-    'new::contact': { key?: string; contact: Contact }
-    'new::address': { address: Address }
-    'new::attachment': { key?: string; attachment: Attachment }
+    'new::contact': { key?: string; application: Application; contact: Contact }
+    'new::address': { application: Application; address: Address }
+    'new::attachment': { key?: string; application: Application; attachment: Attachment }
+    'approve::application': { application: Application }
   }
 }

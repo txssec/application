@@ -34,7 +34,7 @@ export class AddressService extends BaseService {
     data.fromToken = this.Application.token
     data.applicationId = this.Application.id
     const newAddress = await new AddressRepository().create(data)
-    Event.emit('new::address', { address: newAddress })
+    Event.emit('new::address', { application: this.Application, address: newAddress })
 
     return newAddress
   }

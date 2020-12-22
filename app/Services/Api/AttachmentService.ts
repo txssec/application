@@ -51,7 +51,7 @@ export class AttachmentService extends BaseService {
     }
 
     const newAttachment = await new AttachmentRepository().create(data)
-    Event.emit('new::attachment', { attachment: newAttachment })
+    Event.emit('new::attachment', { application: this.Application, attachment: newAttachment })
 
     return newAttachment
   }
