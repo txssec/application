@@ -1,15 +1,36 @@
-import { Issue } from 'App/Models'
-import { EventsList } from '@ioc:Adonis/Core/Event'
 import { DateTime } from 'luxon'
+import { EventsList } from '@ioc:Adonis/Core/Event'
+
+import Event from '@ioc:Adonis/Core/Event'
 
 export default class IssueListener {
-  public async resolveIssueContact({ key, contact }: EventsList['new::contact']) {
-    const emptyContact = await Issue.query()
+  public async approveApplication({ application }: EventsList['approve::application']) {
+    if (application.status === 'approved') {
+      return
+    }
+
+    const issues = await application
+      .related('issues')
+      .query()
+      .whereIn('status', ['pendent', 'reproved'])
+
+    console.log(issues.length)
+    if (issues.length > 0) {
+      return
+    }
+
+    application.merge({ status: 'approved' })
+    await application.save()
+  }
+
+  public async resolveContact({ key, application, contact }: EventsList['new::contact']) {
+    const emptyContact = await application
+      .related('issues')
+      .query()
       .where('key', 'EMPTY_CONTACT')
       .whereNull('deleted_at')
       .whereNull('approved_at')
       .whereIn('status', ['pendent', 'reproved'])
-      .where('application_id', contact.applicationId)
       .first()
 
     if (emptyContact) {
@@ -19,7 +40,9 @@ export default class IssueListener {
     }
 
     const query = () => {
-      return Issue.query()
+      return application
+        .related('issues')
+        .query()
         .whereNull('deleted_at')
         .whereNull('approved_at')
         .whereIn('status', ['pendent', 'reproved'])
@@ -39,10 +62,14 @@ export default class IssueListener {
 
       await issue.save()
     }
+
+    Event.emit('approve::application', { application })
   }
 
-  public async resolveIssueAddress({ address }: EventsList['new::address']) {
-    const emptyContact = await Issue.query()
+  public async resolveAddress({ application, address }: EventsList['new::address']) {
+    const emptyContact = await application
+      .related('issues')
+      .query()
       .where('key', 'EMPTY_ADDRESS')
       .whereNull('deleted_at')
       .whereNull('approved_at')
@@ -55,10 +82,14 @@ export default class IssueListener {
 
       await emptyContact.save()
     }
+
+    Event.emit('approve::application', { application })
   }
 
-  public async resolveIssueAttachment({ key, attachment }: EventsList['new::attachment']) {
-    const emptyAttachment = await Issue.query()
+  public async resolveAttachment({ key, application, attachment }: EventsList['new::attachment']) {
+    const emptyAttachment = await application
+      .related('issues')
+      .query()
       .where('key', 'EMPTY_ATTACHMENT')
       .whereNull('deleted_at')
       .whereNull('approved_at')
@@ -72,7 +103,9 @@ export default class IssueListener {
       await emptyAttachment.save()
     }
 
-    const query = Issue.query()
+    const query = application
+      .related('issues')
+      .query()
       .whereNull('deleted_at')
       .whereNull('approved_at')
       .whereIn('status', ['pendent', 'reproved'])
@@ -91,5 +124,7 @@ export default class IssueListener {
         issue.save()
       }
     })
+
+    Event.emit('approve::application', { application })
   }
 }
